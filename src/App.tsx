@@ -1,3 +1,4 @@
+
 import { useStorageUpload, MediaRenderer } from "@thirdweb-dev/react";
 import { useCallback, useState } from "react"
 import {useDropzone} from 'react-dropzone'
@@ -114,7 +115,6 @@ export default function Home() {
           :null}
 
       </div>
-      
     </div>
   );
 }
