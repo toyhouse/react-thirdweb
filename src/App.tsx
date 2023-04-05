@@ -1,49 +1,120 @@
-import { ConnectWallet } from "@thirdweb-dev/react";
+import { useStorageUpload, MediaRenderer } from "@thirdweb-dev/react";
+import { useCallback, useState } from "react"
+import {useDropzone} from 'react-dropzone'
 import "./styles/Home.css";
 
 export default function Home() {
+
+  interface RawData {
+    data: {
+      nama_produk: string;
+    }
+  }
+  interface Props {
+    records: FlattenedRecord[];
+  }
+
+  interface FlattenedRecord {
+      nama_produk: string;
+  }
+
+  const IPFS_PREFIX = "ipfs://"
+  const GATEWAY_URL = "https://ipfs.io/ipfs/";
+
+  const [uris, setUris] = useState<string []>([]);
+  const [records, setRecords] = useState<FlattenedRecord []>([]);
+
+  const {mutateAsync: upload} = useStorageUpload();
+  const onDrop = useCallback(
+    async (acceptedFiles: File[]) => {
+      const _uris = await upload({data:acceptedFiles});
+      setUris(_uris);    },
+    [upload]
+  );
+
+  const { getRootProps, getInputProps } = useDropzone({ onDrop });
+
+  const getAFile = async () => {
+    const uri = uris[0]
+    const fileName = GATEWAY_URL + uri.slice(IPFS_PREFIX.length)
+    console.log("getting a file new: " + fileName)
+    const response = await fetch(fileName);
+    const resultData = await response.json()
+    const flattenedData = resultData.map( (item:RawData) => item.data)
+    setRecords(flattenedData)
+    console.log(flattenedData)
+    return null;             
+  }
+
+  const isJSONPostFix = (): boolean => {
+    const uri: string = uris[0];
+    const subStr: string = ".json";
+    if (uri?.endsWith(subStr)) {
+      return true;
+    } else {
+      return false;
+    }
+  }
+
+
+
+  function ProductTable({ records }: Props) {
+    return (
+      <table>
+        <thead>
+          <tr key="TITLE ROW">
+            <th>Product Name</th>
+          </tr>
+        </thead>
+        <tbody>
+          {records.map((item) => (
+            <tr key={item?.nama_produk}>
+              <td>{item?.nama_produk}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    );
+  }
+
   return (
     <div className="container">
-      <main className="main">
-        <h1 className="title">
-          Welcome to <a href="https://thirdweb.com/">thirdweb</a>!
-        </h1>
+      <h2>Hello World</h2>
+      <hr />
 
-        <p className="description">
-          Get started by configuring your desired network in{" "}
-          <code className="code">src/index.tsx</code>, then modify the{" "}
-          <code className="code">src/App.tsx</code> file!
-        </p>
+      <div {...getRootProps()}>
+      <input {...getInputProps()} />
+      <button>Drop files here to upload them to IPFS</button>
+    </div>
+    <div>
+    {uris.map(uri => {
+      
 
-        <div className="connect">
-          <ConnectWallet />
-        </div>
+      const hyperlink = GATEWAY_URL + uri.slice(IPFS_PREFIX.length);
+      return (
+        <>
+      <MediaRenderer 
+          key={uri}
+          src={uri}
+          alt="Image"
+          width="400px"
+        />
+        <h2 className="URI"><a href={hyperlink}>URIs: {uri.slice(0)}</a></h2>
+        
+        </>
 
-        <div className="grid">
-          <a href="https://portal.thirdweb.com/" className="card">
-            <h2>Portal &rarr;</h2>
-            <p>
-              Guides, references and resources that will help you build with
-              thirdweb.
-            </p>
-          </a>
+        )
 
-          <a href="https://thirdweb.com/dashboard" className="card">
-            <h2>Dashboard &rarr;</h2>
-            <p>
-              Deploy, configure and manage your smart contracts from the
-              dashboard.
-            </p>
-          </a>
+    })}
+          {isJSONPostFix() ? <button onClick={getAFile}>Get a file</button>:null}
+          {records.length > 0 
+          ? <div><h2 >SHOW DATA of count:{records.length}</h2> 
+          <ProductTable records={records} />
+          </div>
+          :null}
 
-          <a href="https://portal.thirdweb.com/templates" className="card">
-            <h2>Templates &rarr;</h2>
-            <p>
-              Discover and clone template projects showcasing thirdweb features.
-            </p>
-          </a>
-        </div>
-      </main>
+      </div>
+      
     </div>
   );
 }
