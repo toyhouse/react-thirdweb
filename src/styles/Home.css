@@ -117,3 +117,7 @@
 .logo img {
   filter: invert(1);
 }
+
+table, th, td {
+  border: 1px solid white;
+}
