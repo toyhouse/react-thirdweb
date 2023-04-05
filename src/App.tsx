@@ -9,6 +9,7 @@ export default function Home() {
   interface RawData {
     data: {
       nama_produk: string;
+      no_produk:string;
     }
   }
   interface Props {
@@ -17,6 +18,8 @@ export default function Home() {
 
   interface FlattenedRecord {
       nama_produk: string;
+      no_produk:string;
+      produk_gambar:string;
   }
 
   const IPFS_PREFIX = "ipfs://"
@@ -57,26 +60,49 @@ export default function Home() {
     }
   }
 
+  function ImageCells(inputArray: string[]) {
+    return (
+      <table>
+        <tbody>
+            <tr>
+            {inputArray.map((item) => (<td key={item}><img src={item}  width="40px" alt={item}/></td>))}
+            </tr>    
+        </tbody>
+      </table>
+    );
+  }
 
+  function splitString(inputString: string): string[] {
+    if (inputString != null && inputString.includes("|")){
+      // Split the input string into an array using "|" as the delimiter
+      const substrings: string[] = inputString.split("|");
+      return substrings;
+    } else {
+      return [inputString];
+    }
+  }
 
   function ProductTable({ records }: Props) {
     return (
       <table>
         <thead>
-          <tr key="TITLE ROW">
-            <th>Product Name</th>
+          <tr className="tableHeader" key="TITLE ROW">
+            <th className="tableHeader">SOME TABLE</th>
           </tr>
         </thead>
         <tbody>
           {records.map((item) => (
             <tr key={item?.nama_produk}>
-              <td>{item?.nama_produk}</td>
+              <td>{item?.nama_produk}</td> <td>{item?.no_produk}</td> 
+              <td>{ImageCells(splitString(item?.produk_gambar))}</td>
             </tr>
           ))}
         </tbody>
       </table>
     );
   }
+
+
 
   return (
     <div className="container">

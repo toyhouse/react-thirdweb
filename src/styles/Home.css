@@ -121,3 +121,8 @@
 table, th, td {
   border: 1px solid white;
 }
+
+.tableHeader{
+  column-span: 3;
+  colSpan: 3;
+}
